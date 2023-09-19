@@ -11,8 +11,10 @@ if ! command -v jq &> /dev/null; then
 fi
 
 # Set up the SSH key for git operations
-echo -n "$PRIVATE_KEY_ENCODED" | base64 -d > $HOME/.ssh/id_rsa
-chmod 600 $HOME/.ssh/id_rsa
+mkdir -p /root/.ssh && chmod 700 /root/.ssh
+echo -n "$PRIVATE_KEY_ENCODED" | base64 -d > /root/.ssh/id_rsa
+chmod 700 /root/.ssh/id_rsa
+ls -l /root/.ssh/id_rsa
 ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # Clone the repo
