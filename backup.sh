@@ -10,11 +10,11 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
-# Set up the SSH key for git operations
-mkdir -p /root/.ssh && chmod 700 /root/.ssh
-echo -n "$PRIVATE_KEY_ENCODED" | base64 -d > /root/.ssh/id_rsa
-chmod 700 /root/.ssh/id_rsa
-ls -l /root/.ssh/id_rsa
+# Ensure the private key has the correct permissions
+chmod 600 /root/.ssh/id_rsa
+
+# Ensure GitHub is in known hosts
+sed -i '/github.com/d' /root/.ssh/known_hosts
 ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # Clone the repo
@@ -70,8 +70,5 @@ fi
 
 # Cleanup
 rm -rf temp_repo
-
-# Remove the SSH key after use
-rm /root/.ssh/id_rsa
 
 echo "Backup completed successfully!"
