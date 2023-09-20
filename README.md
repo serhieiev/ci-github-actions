@@ -19,10 +19,17 @@ Don't forget t build the new image with `-no-cache` flag if `backup.sh` has been
 docker build --no-cache -t repo_backup_image .
 ```
 
-Once the `Docker` image has been built successfully, you can run the container using the command below. This command also mounts a local directory `backups` to the container, which will store the backup files. Additionally it mounts your local `~/.ssh` directory to the container. This is necessary for container to access your GitHub private key for operations like cloning private repositories. Make sure that `~/.ssh` is the correct path on your system where your GitHub private key is stored. If not, adjust the path according to your actual setup.
+Once the `Docker` image has been built successfully, you can run the container using the command below. This command mounts a local directory backups to the container, which will store the backup files. Additionally, it mounts your specific GitHub private key to the container. Ensure that the path to your private key (`~/.ssh/id_rsa` in the example) is correct. If you use a different key for GitHub or if it's located elsewhere, replace `~/.ssh/id_rsa` with the appropriate path.
 
 ```
-docker run -v $(pwd)/backups:/backups -v ~/.ssh:/root/.ssh repo_backup_image
+docker run -v $(pwd)/backups:/backups -v ~/.ssh/id_rsa:/root/.ssh/id_rsa repo_backup_image
+```
+
+Also adding the `-e MAX_BACKUPS=some_int` environment variable determines the maximum number of backup versions to keep. If the number of backups exceeds this value, the oldest backups will be deleted until the count matches the specified maximum. Passong `-e MAX_BACKUPS=0` deletes all backups.
+
+Example of a command can look like (keep 5 latest backups):
+```
+docker run -v $(pwd)/backups:/backups -v ~/.ssh/id_rsa:/root/.ssh/id_rsa -e MAX_BACKUPS=5 repo_backup_image
 ```
 
 After executing the above command, you should see a folder named `backups` in your current directory. Inside this folder, you'll find the backup files, which are the result of executing the `backup.sh` script inside the Docker container.

@@ -14,8 +14,14 @@ fi
 chmod 600 /root/.ssh/id_rsa
 
 # Ensure GitHub is in known hosts
+if [ ! -f /root/.ssh/known_hosts ]; then
+    touch /root/.ssh/known_hosts
+fi
 sed -i '/github.com/d' /root/.ssh/known_hosts
-ssh-keyscan github.com >> /root/.ssh/known_hosts
+ssh-keyscan github.com >> /root/.ssh/known_hosts 2>/dev/null
+
+# Remove temp_repo directory if it exists
+rm -rf temp_repo
 
 # Clone the repo
 git clone $REPO_URL temp_repo
@@ -28,14 +34,19 @@ fi
 mkdir -p $BACKUP_DIR
 
 # Determine the next backup version
-if [ ! -f $VERSIONS_FILE ]; then
+if [ ! -f $VERSIONS_FILE ] || [ $(jq 'length' $VERSIONS_FILE) -eq 0 ]; then
     echo "[]" > $VERSIONS_FILE
     VERSION="1.0.0"
 else
     LAST_VERSION=$(jq -r '.[-1].version' $VERSIONS_FILE)
-    IFS='.' read -ra ADDR <<< "$LAST_VERSION"
-    ADDR[2]=$((ADDR[2]+1))
-    VERSION="${ADDR[0]}.${ADDR[1]}.${ADDR[2]}"
+    if [[ "$LAST_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        IFS='.' read -ra ADDR <<< "$LAST_VERSION"
+        ADDR[2]=$((ADDR[2]+1))
+        VERSION="${ADDR[0]}.${ADDR[1]}.${ADDR[2]}"
+    else
+        echo "Error: Invalid version format in versions.json."
+        exit 1
+    fi
 fi
 
 # Check if backup with the same name already exists
@@ -55,9 +66,25 @@ DATE=$(date +"%d.%m.%Y")
 SIZE=$(stat -c%s "$BACKUP_DIR/devops_internship_$VERSION.tar.gz")
 jq ". += [{\"version\": \"$VERSION\", \"date\": \"$DATE\", \"size\": $SIZE, \"filename\": \"devops_internship_$VERSION.tar.gz\"}]" $VERSIONS_FILE > "$VERSIONS_FILE.tmp" && mv "$VERSIONS_FILE.tmp" $VERSIONS_FILE
 
+# Check if MAX_BACKUPS is set as a non-negative integer
+if [ -n "$MAX_BACKUPS" ]; then
+    if ! [[ "$MAX_BACKUPS" =~ ^[0-9]+$ ]]; then
+        echo "Error: MAX_BACKUPS should be a non-negative integer value."
+        exit 1
+    fi
+fi
+
+# Handle the case where MAX_BACKUPS=0
+if [ "$MAX_BACKUPS" == "0" ]; then
+    echo "Deleting all backups as MAX_BACKUPS is set to 0."
+    rm -f "$BACKUP_DIR"/*.tar.gz
+    echo "[]" > $VERSIONS_FILE
+    exit 0
+fi
+
 # Handle max backups
-if [ "$1" == "--max-backups" ] && [ -n "$2" ]; then
-    while [ $(jq 'length' $VERSIONS_FILE) -gt $2 ]; do
+if [ -n "$MAX_BACKUPS" ]; then
+    while [ $(jq 'length' $VERSIONS_FILE) -gt $MAX_BACKUPS ]; do
         OLDEST_FILE=$(jq -r '.[0].filename' $VERSIONS_FILE)
         if [ -f "$BACKUP_DIR/$OLDEST_FILE" ]; then
             rm "$BACKUP_DIR/$OLDEST_FILE"
