@@ -64,7 +64,15 @@ mv "devops_internship_$VERSION.tar.gz" $BACKUP_DIR
 # Update versions.json
 DATE=$(date +"%d.%m.%Y")
 SIZE=$(stat -c%s "$BACKUP_DIR/devops_internship_$VERSION.tar.gz")
-jq ". += [{\"version\": \"$VERSION\", \"date\": \"$DATE\", \"size\": $SIZE, \"filename\": \"devops_internship_$VERSION.tar.gz\"}]" $VERSIONS_FILE > "$VERSIONS_FILE.tmp" && mv "$VERSIONS_FILE.tmp" $VERSIONS_FILE
+jq ". += [
+  {
+    \"version\": \"$VERSION\",
+    \"date\": \"$DATE\",
+    \"size\": $SIZE,
+    \"filename\": \"devops_internship_$VERSION.tar.gz\"
+  }
+]" $VERSIONS_FILE > "$VERSIONS_FILE.tmp"
+mv "$VERSIONS_FILE.tmp" $VERSIONS_FILE
 
 # Check if MAX_BACKUPS is set as a non-negative integer
 if [ -n "$MAX_BACKUPS" ]; then
@@ -78,21 +86,12 @@ fi
 if [ "$MAX_BACKUPS" == "0" ]; then
     echo "Deleting all backups as MAX_BACKUPS is set to 0."
     rm -f "$BACKUP_DIR"/*.tar.gz
-    echo "[]" > $VERSIONS_FILE
     exit 0
 fi
 
 # Handle max backups
 if [ -n "$MAX_BACKUPS" ]; then
-    while [ $(jq 'length' $VERSIONS_FILE) -gt $MAX_BACKUPS ]; do
-        OLDEST_FILE=$(jq -r '.[0].filename' $VERSIONS_FILE)
-        if [ -f "$BACKUP_DIR/$OLDEST_FILE" ]; then
-            rm "$BACKUP_DIR/$OLDEST_FILE"
-        else
-            echo "Warning: File $OLDEST_FILE not found."
-        fi
-        jq 'del(.[0])' $VERSIONS_FILE > "$VERSIONS_FILE.tmp" && mv "$VERSIONS_FILE.tmp" $VERSIONS_FILE
-    done
+    ls -t $BACKUP_DIR/devops_internship_*.tar.gz | tail -n +$((MAX_BACKUPS + 1)) | xargs rm -f
 fi
 
 # Cleanup
