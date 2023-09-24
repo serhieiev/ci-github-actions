@@ -33,3 +33,42 @@ docker run -v $(pwd)/backups:/backups -v ~/.ssh/id_rsa:/root/.ssh/id_rsa -e MAX_
 ```
 
 After executing the above command, you should see a folder named `backups` in your current directory. Inside this folder, you'll find the backup files, which are the result of executing the `backup.sh` script inside the Docker container.
+
+
+## DO #2 - Docker/Docker Compose
+
+Make sure that the following repo is cloned to you host machine :
+```
+git clone git@github.com:serhieiev/devops_intern_serhieiev.git
+```
+
+Change your directory to the root folder of the project.
+
+Copy the sample of environment configuration file:
+```
+cp .env.sample .env
+```
+
+Adjust the `.env` file and update variables according your setup.
+
+Build and start the `Docker` containers with `docker-compose`:
+```
+docker-compose up --build
+```
+
+Navigate to the following link in your browser:
+``` 
+http://localhost
+```
+
+You should see helth-check like:
+```
+Status: 200
+Date: 9/23/23, 5:54 PM
+Message: I'm alive
+```
+
+To stop containers:
+```
+docker-compose down
+```
