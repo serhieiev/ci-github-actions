@@ -1,7 +1,7 @@
-FROM debian:bullseye-slim
+FROM alpine:latest
 
 # Install necessary packages
-RUN apt-get update && apt-get install -y git jq tar openssh-client && apt-get clean
+RUN apk update && apk add --no-cache git jq tar openssh-client bash
 
 # Copy the backup script to the container
 COPY backup.sh /backup.sh
