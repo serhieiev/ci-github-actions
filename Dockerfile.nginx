@@ -1,5 +1,0 @@
-FROM nginx:1.21.4-alpine
-
-COPY nginx/configs/proxy.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
