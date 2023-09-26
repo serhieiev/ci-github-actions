@@ -1,0 +1,68 @@
+name: Backup repo on any push or PR, track versions
+
+on:
+  push:
+    paths:
+      - '**'
+    branches:
+      - '**'
+  pull_request:
+    paths:
+      - '**'
+    branches:
+      - '**'
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      tags:
+        description: 'Test scenario tags'
+        required: false
+        type: boolean
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: false
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-22.04
+
+jobs:
+  backup:
+    runs-on: [self-hosted, "${{ inputs.chosen-os }}"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and run backup container
+      run: |
+        docker build -t backup_image -f Dockerfile.backup .
+        docker run --rm backup_image
+
+    - name: Upload archive as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: archive
+        path: /backups/devops_internship_*.tar.gz
+        retention-days: 5
+
+    - name: Upload versions.json as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: versions
+        path: /backups/versions.json
+        retention-days: 5

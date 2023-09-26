@@ -1,0 +1,32 @@
+name: Nginx - dockerize web-server
+
+on:
+  push:
+    paths:
+      - 'nginx/**'
+    branches:
+      - '**'
+  pull_request:
+    paths:
+      - 'nginx/**'
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t nginx_devops:latest ./nginx
+
+    - name: Save Docker image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: nginx_devops:latest
+        path: images
+        retention-days: 1
