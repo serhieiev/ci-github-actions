@@ -58,12 +58,19 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y jq git
 
-    - name: Download previous versions.json artifact
-      uses: actions/download-artifact@v3
+    - name: Download versions artifact from previous run
+      uses: dawidd6/action-download-artifact@v2
       with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: backup.yml
+        workflow_conclusion: success
         name: versions
         path: /backups
-      continue-on-error: true
+
+    - name: Test artifact download
+      run: |
+        ls -R
+        ls -la /backups
       
     - name: Run backup.sh
       run: |
