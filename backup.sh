@@ -33,11 +33,6 @@ fi
 # Create backup directory if it doesn't exist
 mkdir -p $BACKUP_DIR
 
-# Check for versions.json in the current directory
-if [ -f "./versions.json" ]; then
-    cp ./versions.json $BACKUP_DIR/
-fi
-
 # Determine the next backup version
 if [ ! -f $VERSIONS_FILE ] || [ $(jq 'length' $VERSIONS_FILE) -eq 0 ]; then
     echo "[]" > $VERSIONS_FILE

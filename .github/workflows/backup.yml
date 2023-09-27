@@ -59,15 +59,19 @@ jobs:
         sudo apt-get install -y jq git
 
     - name: Download previous versions.json artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: versions
-        path: ./ 
+        path: /backups
       continue-on-error: true
       
     - name: Run backup.sh
       run: |
+        if [ ! -f /backups/versions.json ]; then
+        echo "[]" > /backups/versions.json
+        fi
         bash backup.sh
+
     - name: Upload archive as artifact
       uses: actions/upload-artifact@v3
       with:

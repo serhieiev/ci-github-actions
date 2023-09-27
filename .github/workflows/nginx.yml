@@ -40,7 +40,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t nginx_devops:latest ./nginx
+        docker build -t nginx_devops:latest -f ./nginx/Dockerfile.nginx ./nginx
 
     - name: Save Docker image as artifact
       uses: actions/upload-artifact@v3
