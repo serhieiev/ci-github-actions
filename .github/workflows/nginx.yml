@@ -11,10 +11,28 @@ on:
       - 'nginx/**'
     branches:
       - '**'
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:
     - name: Checkout code

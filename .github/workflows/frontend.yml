@@ -22,18 +22,17 @@ on:
         - info
         - warning
         - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
-      environment:
-        description: 'Environment to run tests against'
-        type: environment
+      chosen-os:
         required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
 
 jobs:
   lint-test-build:
-    runs-on: ubuntu-latest
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:
     - name: Checkout code

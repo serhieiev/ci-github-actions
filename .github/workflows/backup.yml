@@ -22,37 +22,52 @@ on:
         - info
         - warning
         - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
-      environment:
-        description: 'Environment to run tests against'
-        type: environment
-        required: false
       chosen-os:
         required: true
         type: choice
         options:
         - ubuntu-latest
-        - ubuntu-22.04
+        - ubuntu-20.04
+        - self-hosted
 
 jobs:
   backup:
-    runs-on: [self-hosted, "${{ inputs.chosen-os }}"]
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Build and run backup container
+    - name: Set up SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        docker build -t backup_image -f Dockerfile.backup .
-        docker run --rm backup_image
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts     
 
+    - name: Create necessary directories
+      run: |
+        sudo mkdir -p /backups
+        sudo chown -R $USER:$USER /backups
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq git
+
+    - name: Download previous versions.json artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: versions
+        path: ./ 
+      continue-on-error: true
+      
+    - name: Run backup.sh
+      run: |
+        bash backup.sh
     - name: Upload archive as artifact
       uses: actions/upload-artifact@v3
       with:
