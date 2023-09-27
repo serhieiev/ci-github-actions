@@ -49,6 +49,9 @@ else
     fi
 fi
 
+# Output the version for GitHub Actions to capture
+echo "::set-output name=backup_version::$VERSION"
+
 # Check if backup with the same name already exists
 if [ -f "$BACKUP_DIR/devops_internship_$VERSION.tar.gz" ]; then
     echo "Error: Backup with the name devops_internship_$VERSION.tar.gz already exists."

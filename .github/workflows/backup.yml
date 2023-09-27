@@ -73,6 +73,7 @@ jobs:
         ls -la /backups
       
     - name: Run backup.sh
+      id: backup_script
       run: |
         if [ ! -f /backups/versions.json ]; then
         echo "[]" > /backups/versions.json
@@ -82,7 +83,7 @@ jobs:
     - name: Upload archive as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: archive
+        name: devops_internship_${{ steps.backup_script.outputs.backup_version }}.tar.gz
         path: /backups/devops_internship_*.tar.gz
         retention-days: 5
 
