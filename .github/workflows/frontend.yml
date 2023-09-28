@@ -68,7 +68,7 @@ jobs:
     - name: Save Docker image to file
       run: |
         mkdir -p images
-        docker save be_devops:latest > images/be_devops.tar
+        docker save fe_devops:latest > images/fe_devops.tar
   
     - name: Upload Docker image as artifact
       uses: actions/upload-artifact@v3
