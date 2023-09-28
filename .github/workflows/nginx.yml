@@ -50,6 +50,6 @@ jobs:
     - name: Save Docker image as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: nginx_devops:latest
-        path: images/nginx_devops:latest.tar
+        name: nginx_devops
+        path: images/nginx_devops.tar
         retention-days: 1
