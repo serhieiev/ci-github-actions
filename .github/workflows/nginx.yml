@@ -40,7 +40,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t nginx_devops:latest ./nginx
+        docker build -f nginx/Dockerfile.nginx -t nginx_devops:latest ./nginx
 
     - name: Save Docker image to file
       run: |
