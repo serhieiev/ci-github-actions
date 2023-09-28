@@ -40,11 +40,16 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t nginx_devops:latest -f ./nginx/Dockerfile.nginx ./nginx
+        docker build -t nginx_devops:latest ./nginx
+
+    - name: Save Docker image to file
+      run: |
+        mkdir -p images
+        docker save be_devops:latest > images/be_devops.tar
 
     - name: Save Docker image as artifact
       uses: actions/upload-artifact@v3
       with:
         name: nginx_devops:latest
-        path: images
+        path: images/nginx_devops:latest.tar
         retention-days: 1

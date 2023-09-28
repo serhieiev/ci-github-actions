@@ -65,12 +65,12 @@ jobs:
       run: |
         docker build -t fe_devops:latest ./frontend
 
-    - name: Save Docker image to tarball
+    - name: Save Docker image to file
       run: |
         mkdir -p images
-        docker save fe_devops:latest -o images/fe_devops.tar
+        docker save be_devops:latest > images/be_devops.tar
   
-    - name: Upload Docker image tarball as artifact
+    - name: Upload Docker image as artifact
       uses: actions/upload-artifact@v3
       with:
         name: fe_devops
