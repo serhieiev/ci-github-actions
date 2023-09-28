@@ -45,7 +45,7 @@ jobs:
     - name: Save Docker image to file
       run: |
         mkdir -p images
-        docker save be_devops:latest > images/be_devops.tar
+        docker save nginx_devops:latest > images/nginx_devops.tar
 
     - name: Save Docker image as artifact
       uses: actions/upload-artifact@v3
