@@ -62,14 +62,17 @@ jobs:
       run: |
         docker build -t be_devops:latest ./app
 
-    - name: Save Docker image to file
+    - name: Set up AWS CLI
       run: |
-        mkdir -p images
-        docker save be_devops:latest > images/be_devops.tar
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+        echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
 
-    - name: Upload Docker image as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: be_devops
-        path: images/be_devops.tar
-        retention-days: 1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+  
+    - name: Push Docker image to ECR
+      run: |
+        docker tag be_devops:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{secrets.AWS_ECR_BE}}:latest
+        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{secrets.AWS_ECR_BE}}:latest
