@@ -4,13 +4,9 @@ on:
   push:
     paths:
       - 'app/**'
-    branches:
-      - '**'
   pull_request:
     paths:
       - 'app/**'
-    branches:
-      - '**'
   workflow_dispatch: 
     inputs:
       logLevel:

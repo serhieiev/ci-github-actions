@@ -4,13 +4,9 @@ on:
   push:
     paths:
       - 'frontend/**'
-    branches:
-      - '**'
   pull_request:
     paths:
       - 'frontend/**'
-    branches:
-      - '**'
   workflow_dispatch: 
     inputs:
       logLevel:

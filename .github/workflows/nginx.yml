@@ -4,13 +4,9 @@ on:
   push:
     paths:
       - 'nginx/**'
-    branches:
-      - '**'
   pull_request:
     paths:
       - 'nginx/**'
-    branches:
-      - '**'
   workflow_dispatch: 
     inputs:
       logLevel:

@@ -4,12 +4,8 @@ on:
   push:
     paths:
       - '**'
-    branches:
-      - '**'
   pull_request:
     paths:
-      - '**'
-    branches:
       - '**'
   workflow_dispatch: 
     inputs:
@@ -66,11 +62,6 @@ jobs:
         workflow_conclusion: success
         name: versions
         path: /backups
-
-    - name: Test artifact download
-      run: |
-        ls -R
-        ls -la /backups
       
     - name: Run backup.sh
       id: backup_script
