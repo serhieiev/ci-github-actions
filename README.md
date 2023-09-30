@@ -142,9 +142,11 @@ docker-compose down
 - Create new policy for the `ECR` from the IAM (Identity and Access Management) service.
 ![image](https://github.com/serhieiev/devops_intern_serhieiev/assets/12089303/356b2bca-3e92-453e-a21e-23bd1851a295)
 
-- Add the following actions: `GetAuthorizationToken`, `BatchCheckLayerAvailability`, `PutImage` when creating new policy.
+- Add the following actions: `GetAuthorizationToken`, `BatchCheckLayerAvailability`, `PutImage`, `InitiateLayerUpload`, `UploadLayerPart`, `CompleteLayerUpload` when creating new policy.
 ![image](https://github.com/serhieiev/devops_intern_serhieiev/assets/12089303/5810c1b0-1983-44b0-8110-39b1f4b34334)
 
 - Specify the `Policy name` and click the `Create policy` btn.
 ![image](https://github.com/serhieiev/devops_intern_serhieiev/assets/12089303/a774a57b-fa39-46aa-8a53-e67df0226a70)
+
+- Create IAM Policy for S3 operations, and it should contain the following actions: `PutObject`, `GetObject`, `ListBucket`
 
