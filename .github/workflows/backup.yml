@@ -54,33 +54,29 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y jq git
 
-    - name: Download versions artifact from previous run
-      uses: dawidd6/action-download-artifact@v2
+    - name: Setup AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        github_token: ${{secrets.MY_PAT}}
-        workflow: backup.yml
-        workflow_conclusion: success
-        name: versions
-        path: /backups
-      
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Download versions.json from S3 if exists
+      run: |
+        aws s3 cp s3://devops-intern-serhieiev/versions.json /backups/versions.json || echo "versions.json does not exist yet."
+
     - name: Run backup.sh
       id: backup_script
       run: |
         if [ ! -f /backups/versions.json ]; then
-        echo "[]" > /backups/versions.json
+          echo "[]" > /backups/versions.json
         fi
         bash backup.sh
 
-    - name: Upload archive as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: devops_internship_${{ steps.backup_script.outputs.backup_version }}.tar.gz
-        path: /backups/devops_internship_*.tar.gz
-        retention-days: 5
+    - name: Upload backup to S3
+      run: |
+        aws s3 cp /backups/devops_internship_${{ steps.backup_script.outputs.backup_version }}.tar.gz s3://devops-intern-serhieiev/
 
-    - name: Upload versions.json as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: versions
-        path: /backups/versions.json
-        retention-days: 5
+    - name: Upload new versions.json to S3
+      run: |
+        aws s3 cp /backups/versions.json s3://devops-intern-serhieiev/
