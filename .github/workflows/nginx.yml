@@ -28,6 +28,7 @@ on:
 
 jobs:
   build:
+    name: Nginx-${{ github.sha }}
     runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:
