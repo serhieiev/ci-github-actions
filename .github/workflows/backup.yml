@@ -62,6 +62,7 @@ jobs:
         workflow_conclusion: success
         name: versions
         path: /backups
+      continue-on-error: true
       
     - name: Run backup.sh
       id: backup_script
@@ -74,7 +75,7 @@ jobs:
     - name: Upload archive as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: devops_internship_${{ steps.backup_script.outputs.backup_version }}.tar.gz
+        name: devops_internship_${{ steps.backup_script.outputs.backup_version }}_${{ github.sha }}.tar.gz
         path: /backups/devops_internship_*.tar.gz
         retention-days: 5
 
