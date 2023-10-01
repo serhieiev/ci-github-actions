@@ -28,6 +28,7 @@ on:
 
 jobs:
   backup:
+    name: Backup-${{ github.sha }}
     runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:
