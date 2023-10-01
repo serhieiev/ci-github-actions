@@ -1,5 +1,5 @@
 name: Backup repo on any push or PR, track versions
-
+run-name: Backup-${{ github.sha }}
 on:
   push:
     paths:
@@ -55,7 +55,7 @@ jobs:
         sudo apt-get install -y jq git
 
     - name: Setup AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v3
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -75,7 +75,7 @@ jobs:
 
     - name: Upload backup to S3
       run: |
-        aws s3 cp /backups/devops_internship_${{ steps.backup_script.outputs.backup_version }}.tar.gz s3://devops-intern-serhieiev/
+        aws s3 cp /backups/devops_internship_${{ steps.backup_script.outputs.backup_version }}_${{ github.sha }}.tar.gz s3://devops-intern-serhieiev/
 
     - name: Upload new versions.json to S3
       run: |

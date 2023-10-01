@@ -1,5 +1,5 @@
 name: Nginx - dockerize web-server
-
+run-name: Nginx-${{ github.sha }}
 on:
   push:
     paths:
@@ -57,6 +57,6 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: nginx
-        IMAGE_TAG: nginx_devops
+        IMAGE_TAG: nginx_devops_${{ github.sha }}
       run: |
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

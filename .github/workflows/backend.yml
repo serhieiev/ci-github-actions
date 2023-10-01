@@ -1,5 +1,5 @@
 name: Backend - lint, test, dockerize python BE
-
+run-name: Backend-${{ github.sha }}
 on:
   push:
     paths:
@@ -81,7 +81,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: backend
-        IMAGE_TAG: be_devops
+        IMAGE_TAG: be_devops_${{ github.sha }}
       run: |
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
     
