@@ -1,5 +1,5 @@
 name: Frontend - lint, test, dockerize angular FE
-
+run-name: Frontend-${{ github.sha }}
 on:
   push:
     paths:
@@ -28,7 +28,6 @@ on:
 
 jobs:
   lint-test-build:
-    name: Frontend-${{ github.sha }}
     runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:

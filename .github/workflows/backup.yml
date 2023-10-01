@@ -1,5 +1,5 @@
 name: Backup repo on any push or PR, track versions
-
+run-name: Backup-${{ github.sha }}
 on:
   push:
     paths:
@@ -28,7 +28,6 @@ on:
 
 jobs:
   backup:
-    name: Backup-${{ github.sha }}
     runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:

@@ -1,5 +1,5 @@
 name: Nginx - dockerize web-server
-
+run-name: Nginx-${{ github.sha }}
 on:
   push:
     paths:
@@ -28,7 +28,6 @@ on:
 
 jobs:
   build:
-    name: Nginx-${{ github.sha }}
     runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
 
     steps:
