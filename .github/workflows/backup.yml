@@ -39,10 +39,10 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan github.com >> ~/.ssh/known_hosts     
+        mkdir -p $HOME/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
+        chmod 600 $HOME/.ssh/id_rsa
+        ssh-keyscan github.com >> $HOME/.ssh/known_hosts     
 
     - name: Create necessary directories
       run: |
@@ -75,7 +75,7 @@ jobs:
 
     - name: Upload backup to S3
       run: |
-        aws s3 cp /backups/devops_internship_${{ steps.backup_script.outputs.backup_version }}_${{ github.sha }}.tar.gz s3://devops-intern-serhieiev/
+        aws s3 cp /backups/devops_internship_${{ steps.backup_script.outputs.backup_version }}.tar.gz s3://devops-intern-serhieiev/
 
     - name: Upload new versions.json to S3
       run: |
