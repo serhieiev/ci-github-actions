@@ -1,0 +1,61 @@
+name: Deploy to Cloud VM
+run-name: Deploy-${{ github.sha }}
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
+jobs:
+  deploy:
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      POSTGRES_HOST_AUTH_METHOD: ${{ secrets.POSTGRES_HOST_AUTH_METHOD }}
+
+    steps:
+    - name: Replace image tag in Docker Compose file
+      run: |
+        sed -i "s/{{TAG}}/${{ github.sha }}/g" docker-compose-prod.yaml
+
+    - uses: actions/checkout@v3
+    - name: Checkout code
+      env:
+          AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+          AWS_VM_HOSTNAME: ${{ secrets.AWS_VM_HOSTNAME }}
+          AWS_VM_USERNAME: ${{ secrets.AWS_VM_USERNAME }}
+          AWS_ECR_USER: ${{ secrets.AWS_ECR_USER }}
+          AWS_ECR_PASSWORD: ${{ secrets.AWS_ECR_PASSWORD }}
+
+
+      run: |
+        echo "$AWS_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        scp -o StrictHostKeyChecking=no -i private_key docker-compose-prod.yaml ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME}:/home/ubuntu/
+        ssh -o StrictHostKeyChecking=no -i private_key ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME} '
+          # Check if /home/ubuntu/app exists, if not create
+          [ -d /home/ubuntu/app ] || mkdir /home/ubuntu/app
+    
+          cd /home/ubuntu/app
+          docker login -u ${AWS_ECR_USER} -p ${AWS_ECR_PASSWORD} 347872487225.dkr.ecr.us-east-1.amazonaws.com
+          docker-compose -f docker-compose-prod.yml pull
+          docker-compose -f docker-compose-prod.yml up -d
+        '
