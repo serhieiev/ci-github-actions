@@ -52,7 +52,7 @@ jobs:
           [ -d /home/ubuntu/app ] || mkdir /home/ubuntu/app
     
           cd /home/ubuntu/app
-          docker login -u ${AWS_ECR_USER} -p ${AWS_ECR_PASSWORD} 347872487225.dkr.ecr.us-east-1.amazonaws.com
+          eval $(aws ecr get-login --no-include-email --region us-east-1)
           docker-compose -f docker-compose-prod.yml pull
           docker-compose -f docker-compose-prod.yml up -d
         '
