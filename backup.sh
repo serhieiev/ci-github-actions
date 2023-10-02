@@ -80,7 +80,7 @@ mv "$VERSIONS_FILE.tmp" $VERSIONS_FILE
 # Check if MAX_BACKUPS is set as a non negative integer
 if [ -n "$MAX_BACKUPS" ]; then
     if ! [[ "$MAX_BACKUPS" =~ ^[0-9]+$ ]]; then
-        echo "Error: MAX_BACKUPS should be a non-negative integer value."
+        echo "Error: MAX_BACKUPS should be a non negative integer value."
         exit 1
     fi
 fi
