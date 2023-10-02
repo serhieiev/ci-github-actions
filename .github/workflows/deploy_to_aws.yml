@@ -47,7 +47,7 @@ jobs:
         echo "$AWS_PRIVATE_KEY" > private_key
         chmod 600 private_key
         scp -o StrictHostKeyChecking=no -i private_key docker-compose-prod.yml ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME}:/home/ubuntu/app/
-        ssh -o StrictHostKeyChecking=no -i private_key ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME} '
+        ssh -o StrictHostKeyChecking=no -i private_key ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME} "
           export DB_USER=${DB_USER};
           export DB_PASSWORD=${DB_PASSWORD};
           export DB_NAME=${DB_NAME};
@@ -56,7 +56,7 @@ jobs:
           [ -d /home/ubuntu/app ] || mkdir /home/ubuntu/app
     
           cd /home/ubuntu/app
-          eval $(aws ecr get-login --no-include-email --region us-east-1)
+          echo $AWS_ECR_PASSWORD | docker login --username AWS --password-stdin your-ecr-url
           docker-compose -f docker-compose-prod.yml pull
           docker-compose -f docker-compose-prod.yml up -d
-        '
+        "

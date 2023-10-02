@@ -29,8 +29,6 @@ services:
     image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/backend:latest
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     depends_on:
       db:
         condition: service_healthy
