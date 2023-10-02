@@ -46,7 +46,7 @@ jobs:
       run: |
         echo "$AWS_PRIVATE_KEY" > private_key
         chmod 600 private_key
-        scp -o StrictHostKeyChecking=no -i private_key docker-compose-prod.yml ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME}:/home/ubuntu/
+        scp -o StrictHostKeyChecking=no -i private_key docker-compose-prod.yml ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME}:/home/ubuntu/app/
         ssh -o StrictHostKeyChecking=no -i private_key ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME} '
           # Check if /home/ubuntu/app exists, if not create
           [ -d /home/ubuntu/app ] || mkdir /home/ubuntu/app
