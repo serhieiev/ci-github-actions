@@ -66,7 +66,7 @@ jobs:
     - name: Download versions.json from S3 if exists
       run: |
         aws s3 cp s3://devops-intern-serhieiev/versions.json /backups/versions.json || echo "versions.json does not exist yet."
-
+      
     - name: Run backup.sh
       id: backup_script
       run: |

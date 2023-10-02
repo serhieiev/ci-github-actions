@@ -84,4 +84,3 @@ jobs:
         IMAGE_TAG: be_devops_${{ github.sha }}
       run: |
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-    
