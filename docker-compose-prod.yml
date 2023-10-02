@@ -21,12 +21,12 @@ services:
       - "5432:5432"
 
   frontend:
-    image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/frontend:{{TAG}}
+    image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
     ports:
       - "4200:4200"
 
   backend:
-    image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/backend:{{TAG}}
+    image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/backend:latest
     ports:
       - "8000:8000"
     env_file:
@@ -36,7 +36,7 @@ services:
         condition: service_healthy
 
   nginx:
-    image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/nginx:{{TAG}}
+    image: 347872487225.dkr.ecr.us-east-1.amazonaws.com/nginx:latest
     ports:
       - "80:80"
     depends_on:

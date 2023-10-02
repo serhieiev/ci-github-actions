@@ -34,10 +34,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Replace image tag in Docker Compose file
-      run: |
-        sed -i "s/{{TAG}}/${{ github.sha }}/g" docker-compose-prod.yml
-
     - name: Checkout code
       env:
           AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}

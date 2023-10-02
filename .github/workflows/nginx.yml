@@ -53,10 +53,11 @@ jobs:
       run: |
         docker build -f nginx/Dockerfile.nginx -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./nginx
     
-    - name: Push image to Amazon ECR
+    - name: Tag image as latest and push
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: nginx
         IMAGE_TAG: nginx_devops_${{ github.sha }}
       run: |
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
