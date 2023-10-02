@@ -1,0 +1,4 @@
+name: Deploy to Cloud VM
+
+on:
+  workflow_dispatch
