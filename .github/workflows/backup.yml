@@ -2,6 +2,8 @@ name: Backup repo on any push or PR, track versions
 run-name: Backup-${{ github.sha }}
 on:
   push:
+    branches:
+      - main
     paths:
       - '**'
   pull_request:
