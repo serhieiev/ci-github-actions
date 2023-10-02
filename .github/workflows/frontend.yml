@@ -1,4 +1,74 @@
-name: Frontend
-
+name: Frontend - lint, test, dockerize angular FE
+run-name: Frontend-${{ github.sha }}
 on:
-  workflow_dispatch
+  push:
+    paths:
+      - 'frontend/**'
+  pull_request:
+    paths:
+      - 'frontend/**'
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
+
+jobs:
+  lint-test-build:
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Chromium
+      run: sudo apt-get install -y chromium-browser
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install NPM dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Lint with npm
+      run: |
+        cd frontend
+        npm run lint
+
+    - name: Test with npm
+      run: |
+        cd frontend
+        npm run test:ci
+
+    - name: Build Docker image
+      run: |
+        docker build -t fe_devops:latest ./frontend
+
+    - name: Save Docker image to file
+      run: |
+        mkdir -p images
+        docker save fe_devops:latest > images/fe_devops.tar
+  
+    - name: Upload Docker image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: fe_devops
+        path: images/fe_devops.tar
+        retention-days: 1

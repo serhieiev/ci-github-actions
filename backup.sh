@@ -49,6 +49,9 @@ else
     fi
 fi
 
+# Output the version for GitHub Actions to capture
+echo "backup_version=${VERSION}" >> $GITHUB_OUTPUT
+
 # Check if backup with the same name already exists
 if [ -f "$BACKUP_DIR/devops_internship_$VERSION.tar.gz" ]; then
     echo "Error: Backup with the name devops_internship_$VERSION.tar.gz already exists."
@@ -74,7 +77,7 @@ jq ". += [
 ]" $VERSIONS_FILE > "$VERSIONS_FILE.tmp"
 mv "$VERSIONS_FILE.tmp" $VERSIONS_FILE
 
-# Check if MAX_BACKUPS is set as a non-negative integer
+# Check if MAX_BACKUPS is set as a non negative integer
 if [ -n "$MAX_BACKUPS" ]; then
     if ! [[ "$MAX_BACKUPS" =~ ^[0-9]+$ ]]; then
         echo "Error: MAX_BACKUPS should be a non-negative integer value."

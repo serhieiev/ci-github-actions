@@ -1,4 +1,75 @@
-name: Backend
-
+name: Backend - lint, test, dockerize python BE
+run-name: Backend-${{ github.sha }}
 on:
-  workflow_dispatch
+  push:
+    paths:
+      - 'app/**'
+  pull_request:
+    paths:
+      - 'app/**'
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
+
+jobs:
+  lint-test-build:
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
+
+    strategy:
+      matrix:
+        python-version: [3.11]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{matrix.python-version}}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        pip install -r app/requirements.txt
+        pip install -r app/requirements_dev.txt
+
+    - name: Lint with flake8
+      run: |
+        flake8 app/
+
+    - name: Test with pytest
+      run: |
+        pytest app/tests/
+
+    - name: Build Docker image
+      run: |
+        docker build -t be_devops:latest ./app
+
+    - name: Save Docker image to file
+      run: |
+        mkdir -p images
+        docker save be_devops:latest > images/be_devops.tar
+
+    - name: Upload Docker image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: be_devops
+        path: images/be_devops.tar
+        retention-days: 1

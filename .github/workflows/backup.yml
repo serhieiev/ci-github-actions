@@ -1,4 +1,89 @@
-name: Backup
-
+name: Backup repo on any push or PR, track versions
+run-name: Backup-${{ github.sha }}
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - main
+    paths:
+      - '**'
+  pull_request:
+    paths:
+      - '**'
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
+
+jobs:
+  backup:
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        mkdir -p $HOME/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
+        chmod 600 $HOME/.ssh/id_rsa
+        ssh-keyscan github.com >> $HOME/.ssh/known_hosts     
+
+    - name: Create necessary directories
+      run: |
+        sudo mkdir -p /backups
+        sudo chown -R $USER:$USER /backups
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq git
+
+    - name: Download versions artifact from previous run
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.MY_PAT}}
+        workflow: backup.yml
+        workflow_conclusion: success
+        name: versions
+        path: /backups
+      continue-on-error: true
+      
+    - name: Run backup.sh
+      id: backup_script
+      run: |
+        if [ ! -f /backups/versions.json ]; then
+        echo "[]" > /backups/versions.json
+        fi
+        bash backup.sh
+
+    - name: Upload archive as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: devops_internship_${{ steps.backup_script.outputs.backup_version }}_${{ github.sha }}.tar.gz
+        path: /backups/devops_internship_*.tar.gz
+        retention-days: 5
+
+    - name: Upload versions.json as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: versions
+        path: /backups/versions.json
+        retention-days: 5

@@ -1,4 +1,51 @@
-name: Nginx
-
+name: Nginx - dockerize web-server
+run-name: Nginx-${{ github.sha }}
 on:
-  workflow_dispatch
+  push:
+    paths:
+      - 'nginx/**'
+  pull_request:
+    paths:
+      - 'nginx/**'
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
+
+jobs:
+  build:
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -f nginx/Dockerfile.nginx -t nginx_devops:latest ./nginx
+
+    - name: Save Docker image to file
+      run: |
+        mkdir -p images
+        docker save nginx_devops:latest > images/nginx_devops.tar
+
+    - name: Save Docker image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: nginx_devops
+        path: images/nginx_devops.tar
+        retention-days: 1
