@@ -57,18 +57,31 @@ jobs:
         cd frontend
         npm run test:ci
 
-    - name: Build Docker image
-      run: |
-        docker build -t fe_devops:latest ./frontend
-
-    - name: Save Docker image to file
-      run: |
-        mkdir -p images
-        docker save fe_devops:latest > images/fe_devops.tar
-  
-    - name: Upload Docker image as artifact
-      uses: actions/upload-artifact@v3
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
       with:
-        name: fe_devops
-        path: images/fe_devops.tar
-        retention-days: 1
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: frontend
+        IMAGE_TAG: fe_devops_${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./frontend
+    
+    - name: Tag image as latest and push
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: frontend
+        IMAGE_TAG: fe_devops_${{ github.sha }}
+      run: |
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+  

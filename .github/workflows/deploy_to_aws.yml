@@ -1,4 +1,80 @@
 name: Deploy to Cloud VM
-
 on:
   workflow_dispatch
+run-name: Deploy-${{ github.sha }}
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      chosen-os:
+        required: true
+        type: choice
+        options:
+        - ubuntu-latest
+        - ubuntu-20.04
+        - self-hosted
+jobs:
+  deploy:
+    runs-on: "${{ inputs.chosen-os || 'ubuntu-latest' }}"
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      POSTGRES_HOST_AUTH_METHOD: ${{ secrets.POSTGRES_HOST_AUTH_METHOD }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Checkout code
+      env:
+          AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+          AWS_VM_HOSTNAME: ${{ secrets.AWS_VM_HOSTNAME }}
+          AWS_VM_USERNAME: ${{ secrets.AWS_VM_USERNAME }}
+          AWS_ECR_USER: ${{ secrets.AWS_ECR_USER }}
+          AWS_ECR_PASSWORD: ${{ secrets.AWS_ECR_PASSWORD }}
+
+
+      run: |
+        echo "$AWS_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+    
+        # SSH to check if /home/ubuntu/app exists, if not, it creates it.
+        ssh -o StrictHostKeyChecking=no -i private_key ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME} "
+        [ -d /home/ubuntu/app ] || mkdir /home/ubuntu/app
+        "
+    
+        # Create a .env file with the secrets from GitHub
+        echo "DB_USER=${{ secrets.DB_USER }}" > .env
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+        echo "DB_ENDPOINT=db" >> .env
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+        echo "POSTGRES_HOST_AUTH_METHOD=${{ secrets.POSTGRES_HOST_AUTH_METHOD }}" >> .env
+    
+        # Copy docker-compose-prod.yml and .env to the remote server
+        scp -o StrictHostKeyChecking=no -i private_key docker-compose-prod.yml ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME}:/home/ubuntu/app/
+        scp -o StrictHostKeyChecking=no -i private_key .env ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME}:/home/ubuntu/app/
+    
+        # SSH and start the services using docker-compose
+        ssh -o StrictHostKeyChecking=no -i private_key ${AWS_VM_USERNAME}@${AWS_VM_HOSTNAME} "
+        export DB_USER=${DB_USER};
+        export DB_PASSWORD=${DB_PASSWORD};
+        export DB_NAME=${DB_NAME};
+        export POSTGRES_HOST_AUTH_METHOD=${POSTGRES_HOST_AUTH_METHOD};
+        
+        cd /home/ubuntu/app
+        echo $AWS_ECR_PASSWORD | docker login --username AWS --password-stdin your-ecr-url
+        docker-compose -f docker-compose-prod.yml pull
+        docker-compose -f docker-compose-prod.yml up -d
+        "
+   
