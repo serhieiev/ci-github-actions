@@ -1,4 +1,6 @@
 name: Deploy to Cloud VM
+on:
+  workflow_dispatch
 run-name: Deploy-${{ github.sha }}
 on:
   push:
@@ -75,4 +77,4 @@ jobs:
         docker-compose -f docker-compose-prod.yml pull
         docker-compose -f docker-compose-prod.yml up -d
         "
-    
+   
